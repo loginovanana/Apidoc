@@ -1,0 +1,17 @@
+.git
+pycache
+*.pyc
+*.egg-info
+dist
+build
+venv
+.venv
+.env
+.vscode
+.idea
+.pytest_cache
+.coverage
+*.log
+*.db
+*.sqlite
+tmp/

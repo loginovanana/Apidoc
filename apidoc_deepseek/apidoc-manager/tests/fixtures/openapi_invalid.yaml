@@ -1,0 +1,20 @@
+openapi: "3.0.3"
+info:
+  title: "Invalid Test API"
+paths:
+  /users:
+    get:
+      summary: "List users"
+  /users/{id}:
+    post:
+      summary: "Update user"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MissingSchema"
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'apidoc-monitor'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - 'alerts.yml'
+
+scrape_configs:
+  - job_name: 'apidoc-server'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['server:8000']
+        labels:
+          service: 'apidoc'
+          environment: 'production'

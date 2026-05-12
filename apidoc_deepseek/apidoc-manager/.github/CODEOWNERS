@@ -1,0 +1,5 @@
+* @apidoc-team
+/apidoc_cli/ @cli-maintainers
+/apidoc_server/ @backend-maintainers
+/docs/ @docs-team
+/.github/workflows/ @devops-team

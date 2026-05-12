@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apidoc-server
+  namespace: apidoc
+  labels:
+    app: apidoc-server
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: apidoc-server
+  template:
+    metadata:
+      labels:
+        app: apidoc-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: server
+        image: ghcr.io/apidoc/server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: APIDOC_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: apidoc-secrets
+              key: database-url
+        - name: APIDOC_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: apidoc-secrets
+              key: secret-key
+        - name: APIDOC_LOG_JSON
+          value: "true"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5

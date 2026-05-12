@@ -1,0 +1,88 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "apidoc-manager"
+version = "1.0.0"
+description = "CLI tool for automating OpenAPI specification management"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["openapi", "swagger", "cli", "api", "documentation"]
+
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.0",
+    "httpx>=0.27",
+    "PyYAML>=6.0",
+    "openapi-spec-validator>=0.7",
+    "prance>=23.6",
+    "jsonschema>=4.21",
+    "loguru>=0.7",
+    "python-dotenv>=1.0",
+    "requests>=2.31",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+    "aiosqlite>=0.20",
+    "python-multipart>=0.0.9",
+    "python-json-logger>=2.0",
+]
+
+[project.optional-dependencies]
+postgres = ["asyncpg>=0.29", "psycopg2-binary>=2.9"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
+    "respx>=0.21",
+    "httpx>=0.27",
+    "black>=24.0",
+    "isort>=5.13",
+    "mypy>=1.9",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+apidoc = "apidoc.cli:app"
+
+[project.entry_points."apidoc.generators"]
+fastapi = "apidoc.plugins.generators.fastapi_gen:FastAPIGeneratorPlugin"
+flask   = "apidoc.plugins.generators.flask_gen:FlaskGeneratorPlugin"
+
+[project.entry_points."apidoc.testgens"]
+pytest = "apidoc.plugins.testgens.pytest_gen:PytestTestGenPlugin"
+
+[project.entry_points."apidoc.publishers"]
+swaggerhub = "apidoc.plugins.publishers.swaggerhub:SwaggerHubPublisher"
+github     = "apidoc.plugins.publishers.github:GitHubPublisher"
+gitlab     = "apidoc.plugins.publishers.gitlab:GitLabPublisher"
+redocly    = "apidoc.plugins.publishers.redocly:RedoclyPublisher"
+readme     = "apidoc.plugins.publishers.readme:ReadMePublisher"
+
+[tool.hatch.build.targets.wheel]
+packages = ["apidoc", "server"]
+
+[tool.pytest.ini_options]
+testpaths    = ["tests"]
+asyncio_mode = "auto"
+addopts      = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["apidoc", "server"]
+omit   = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+fail_under   = 80
+show_missing = true
+
+[tool.black]
+line-length     = 100
+target-version  = ["py310", "py311", "py312"]
+
+[tool.isort]
+profile     = "black"
+line_length = 100

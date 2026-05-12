@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apidoc-config
+  namespace: apidoc
+data:
+  APIDOC_HOST: "0.0.0.0"
+  APIDOC_PORT: "8000"
+  APIDOC_LOG_LEVEL: "INFO"
+  APIDOC_LOG_JSON: "true"
+  APIDOC_ENABLE_DOCS: "true"
+  APIDOC_ENABLE_METRICS: "true"
+  APIDOC_RATE_LIMIT_PER_MINUTE: "60"
+  APIDOC_RATE_LIMIT_PER_HOUR: "1000"

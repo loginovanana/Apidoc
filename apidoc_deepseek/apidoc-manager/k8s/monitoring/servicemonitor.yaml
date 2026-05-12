@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: apidoc-monitor
+  namespace: apidoc
+  labels:
+    release: prometheus
+    app: apidoc-server
+spec:
+  selector:
+    matchLabels:
+      app: apidoc-server
+  namespaceSelector:
+    matchNames:
+      - apidoc
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

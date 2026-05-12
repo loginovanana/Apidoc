@@ -1,0 +1,28 @@
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends libpq5 curl && rm -rf /var/lib/apt/lists/*
+RUN useradd -m -u 1000 -s /bin/bash apidoc && mkdir -p /app /data && chown -R apidoc:apidoc /app /data
+
+COPY --from=builder /root/.local /home/apidoc/.local
+ENV PATH=/home/apidoc/.local/bin:$PATH
+
+WORKDIR /app
+COPY --chown=apidoc:apidoc apidoc_cli ./apidoc_cli
+COPY --chown=apidoc:apidoc apidoc_server ./apidoc_server
+COPY --chown=apidoc:apidoc pyproject.toml .
+RUN pip install --no-cache-dir -e .
+
+USER apidoc
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/health || exit 1
+
+EXPOSE 8000
+
+CMD ["uvicorn", "apidoc_server.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

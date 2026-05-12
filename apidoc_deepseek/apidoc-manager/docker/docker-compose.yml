@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: apidoc
+      POSTGRES_PASSWORD: apidoc_password
+      POSTGRES_DB: apidoc
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apidoc"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    ports:
+      - "8000:8000"
+    environment:
+      APIDOC_DATABASE_URL: postgresql+asyncpg://apidoc:apidoc_password@postgres:5432/apidoc
+      APIDOC_REDIS_URL: redis://redis:6379/0
+      APIDOC_SECRET_KEY: dev-secret-key-change-in-production
+      APIDOC_HOST: 0.0.0.0
+      APIDOC_PORT: 8000
+      APIDOC_DEBUG: "true"
+      APIDOC_LOG_LEVEL: DEBUG
+    volumes:
+      - ../apidoc_server:/app/apidoc_server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        uvicorn apidoc_server.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+volumes:
+  postgres_data:
+  redis_data:
